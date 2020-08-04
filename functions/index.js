@@ -8,8 +8,7 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 });
 
 const createNotification = (notification) => {
-    return admin.firestore().collection('notifications').add(notification)
-    .then(doc => console.log('Notif added', doc));
+    return admin.firestore().collection('notifications').add(notification);
 }
 
 exports.projectCreated = functions.firestore
@@ -26,16 +25,16 @@ exports.projectCreated = functions.firestore
     }
 )
 
-exports.userJoined = functions.auth.user().onCreate(user => {
-    return admin.firestore().collection('users').doc(user.uid).get()
-    .then((doc) => {
-        const newUser = doc.data();
-
+exports.userJoined = functions.firestore
+    .document("users/{uid}")
+    .onCreate(doc => {
+        const user = doc.data();
+        
         const notification = {
-            content: 'Joined the App',
-            user: `${newUser.firstName} ${newUser.lastName}`,
+            content: "Joined the App",
+            user: `${user.firstName} ${user.lastName}`,
             time: admin.firestore.FieldValue.serverTimestamp()
         }
-        return createNotification(notification); 
-    })
-});
+        return createNotification(notification);
+    }
+)
